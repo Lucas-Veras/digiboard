@@ -1,23 +1,17 @@
-import React, {
-  Dispatch,
-  SetStateAction,
-  forwardRef,
-  useEffect,
-  useRef,
-} from "react";
-import { MotionValue, useMotionValue, motion } from "framer-motion";
-import useViewPortSize from "@/hooks/useViewPortSize";
 import { CANVAS_SIZE } from "@/constants/canvasSize";
+import { useBoardPosition } from "@/contexts/RoomContext/RoomContext";
+import useViewPortSize from "@/hooks/useViewPortSize";
+import { motion, useMotionValue } from "framer-motion";
+import { Dispatch, SetStateAction, forwardRef, useEffect, useRef } from "react";
 
-const Minimap = forwardRef<
+const MiniMap = forwardRef<
   HTMLCanvasElement,
   {
-    x: MotionValue<number>;
-    y: MotionValue<number>;
     dragging: boolean;
     setMovedMiniMap: Dispatch<SetStateAction<boolean>>;
   }
->(({ x, y, dragging, setMovedMiniMap }, ref) => {
+>(({ dragging, setMovedMiniMap }, ref) => {
+  const { x, y } = useBoardPosition();
   const containerRef = useRef<HTMLDivElement>(null);
   const { width, height } = useViewPortSize();
 
@@ -56,8 +50,8 @@ const Minimap = forwardRef<
         dragConstraints={containerRef}
         dragElastic={0}
         dragTransition={{ power: 0, timeConstant: 0 }}
-        onDragStart={() => setMovedMiniMap((prev: boolean) => !prev)}
-        onDragEnd={() => setMovedMiniMap((prev: boolean) => !prev)}
+        onDragStart={() => setMovedMiniMap((prev) => !prev)}
+        onDragEnd={() => setMovedMiniMap((prev) => !prev)}
         className="absolute top-0 left-0 cursor-grab border-2 border-red-500"
         style={{ width: width / 10, height: height / 10, x: miniX, y: miniY }}
         animate={{ x: -x.get() / 10, y: -y.get() / 10 }}
@@ -67,6 +61,6 @@ const Minimap = forwardRef<
   );
 });
 
-Minimap.displayName = "Minimap";
+MiniMap.displayName = "MiniMap";
 
-export default Minimap;
+export default MiniMap;

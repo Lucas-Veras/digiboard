@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useKeyPressEvent } from "react-use";
 import { useMotionValue, motion } from "framer-motion";
 import { CANVAS_SIZE } from "@/constants/canvasSize";
-import { useDraw } from "@/hooks/drawing.canvas";
+import { useDraw } from "@/hooks/useDraw";
 import { socket } from "@/lib/socket";
 import { drawFromSocket } from "@/helpers/canvasHelpers";
 import Minimap from "./MiniMap";
@@ -38,7 +38,6 @@ const Canvas = () => {
           CANVAS_SIZE.width,
           CANVAS_SIZE.height,
         );
-      const canvas = canvasRef.current;
     }
   };
 
@@ -94,7 +93,7 @@ const Canvas = () => {
   }, [drawing, ctx]);
 
   return (
-    <div className="h-full w-full overflow-hidden">
+    <div className="relative h-full w-full overflow-hidden">
       <motion.canvas
         ref={canvasRef}
         width={CANVAS_SIZE.width}
@@ -103,9 +102,9 @@ const Canvas = () => {
         style={{ x, y }}
         drag={dragging}
         dragConstraints={{
-          left: -CANVAS_SIZE.width + width,
+          left: -CANVAS_SIZE.width - width,
           right: 0,
-          top: -CANVAS_SIZE.height + height,
+          top: -CANVAS_SIZE.height - height,
           bottom: 0,
         }}
         dragElastic={0}
@@ -114,19 +113,17 @@ const Canvas = () => {
         onMouseUp={handleEndDrawing}
         onMouseMove={(e) => handleDraw(e.clientX, e.clientY)}
         onTouchStart={(e) => {
-          const touch = e.touches[0];
+          const touch = e.changedTouches[0];
           handleStartDrawing(touch.clientX, touch.clientY);
         }}
         onTouchEnd={handleEndDrawing}
         onTouchMove={(e) => {
-          const touch = e.touches[0];
+          const touch = e.changedTouches[0];
           handleDraw(touch.clientX, touch.clientY);
         }}
       />
       <Minimap
         ref={smallCanvasRef}
-        x={x}
-        y={y}
         dragging={dragging}
         setMovedMiniMap={setMovedMiniMap}
       />

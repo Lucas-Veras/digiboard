@@ -1,5 +1,5 @@
 import { createServer } from "http";
-
+import {} from "@/types/global";
 import express from "express";
 import Next, { NextApiHandler } from "next";
 import { Server } from "socket.io";
@@ -22,9 +22,20 @@ nextApp.prepare().then(async () => {
   io.on("connection", (socket) => {
     console.log("connection");
 
+    socket.join("global");
+
+    const allUsers = io.sockets.adapter.rooms.get("global");
+
+    if (allUsers) io.to("global").emit("users_in_room", [...allUsers]);
+
     socket.on("draw", (moves, options) => {
       console.log("draw", moves, options);
       socket.broadcast.emit("socket_draw", moves, options);
+    });
+
+    socket.on("mouse_move", (x, y) => {
+      console.log("mouse_move", x, y);
+      socket.broadcast.emit("mouse_moved", x, y, socket.id);
     });
 
     socket.on("disconnect", () => {
