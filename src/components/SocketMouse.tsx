@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { BsCursorFill } from "react-icons/bs";
 
-const SocketMouse = ({ socketId }: { socketId: string }) => {
+const SocketMouse = ({ userId }: { userId: string }) => {
   const boardPos = useBoardPosition();
   const [x, setX] = useState(boardPos.x.get());
   const [y, setY] = useState(boardPos.y.get());
@@ -13,7 +13,7 @@ const SocketMouse = ({ socketId }: { socketId: string }) => {
 
   useEffect(() => {
     socket.on("mouse_moved", (newX, newY, socketIdMoved) => {
-      if (socketIdMoved === socketId) {
+      if (socketIdMoved === userId) {
         setPos({ x: newX, y: newY });
       }
     });
@@ -21,7 +21,7 @@ const SocketMouse = ({ socketId }: { socketId: string }) => {
     return () => {
       socket.off("mouse_moved");
     };
-  }, [socketId]);
+  }, [userId]);
 
   useEffect(() => {
     const unsubscribe = boardPos.x.onChange(setX);

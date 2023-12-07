@@ -3,6 +3,7 @@ import { socket } from "@/lib/socket";
 import React, { useRef } from "react";
 import { useInterval, useMouse } from "react-use";
 import { motion } from "framer-motion";
+import { getPos } from "@/lib/getPos";
 
 const MousePosition = () => {
   const prevPosition = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -12,7 +13,7 @@ const MousePosition = () => {
 
   useInterval(() => {
     if (prevPosition.current.x !== docX || prevPosition.current.y !== docY) {
-      socket.emit("mouse_move", docX - x.get(), docY - y.get());
+      socket.emit("mouse_move", getPos(docX, x), getPos(docY, y));
       prevPosition.current = { x: docX, y: docY };
     }
   }, 300);
@@ -20,11 +21,11 @@ const MousePosition = () => {
   return (
     <motion.div
       ref={ref}
-      className="absolute top-0 left-0 z-50 select-none"
+      className="pointer-events-none absolute top-0 left-0 z-50 select-none"
       animate={{ x: docX + 15, y: docY + 15 }}
       transition={{ duration: 0.05, ease: "linear" }}
     >
-      {docX - x.get()} | {docY - y.get()}
+      {getPos(docX, x).toFixed(0)} | {getPos(docY, y).toFixed(0)}
     </motion.div>
   );
 };

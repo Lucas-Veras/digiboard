@@ -55,7 +55,7 @@ const MiniMap = forwardRef<
         className="absolute top-0 left-0 cursor-grab border-2 border-red-500"
         style={{ width: width / 10, height: height / 10, x: miniX, y: miniY }}
         animate={{ x: -x.get() / 10, y: -y.get() / 10 }}
-        transition={{ duration: 0.1 }}
+        transition={{ duration: 0 }}
       ></motion.div>
     </div>
   );
