@@ -9,15 +9,14 @@ export declare global {
     options: CtxOptions;
   }
 
-  type Room = Map<string, Move[]>;
+  type Room = { users: Map<string, Move[]>; drawed: Move[] };
 
   interface ServerToClientEvents {
-    room: (room: string) => void;
+    room: (room: Room, usersToParse: string) => void;
     created: (roomId: string) => void;
     joined: (roomId: string, failed?: boolean) => void;
     user_draw: (move: Move, userId: string) => void;
     user_undo: (userId: string) => void;
-    socket_draw: (newMoves: [number, number][], options: CtxOptions) => void;
     mouse_moved: (x: number, y: number, userId: string) => void;
     new_user: (userId: string) => void;
     user_disconnected: (userId: string) => void;
