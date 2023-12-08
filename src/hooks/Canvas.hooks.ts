@@ -1,5 +1,5 @@
 import { useBoardPosition } from "@/contexts/RoomContext/RoomContext";
-import { drawOnUndo } from "@/helpers/canvasHelpers";
+import { drawOnUndo, handleMove } from "@/helpers/canvasHelpers";
 import { getPos } from "@/lib/getPos";
 import { useOptions } from "@/recoil/options";
 import usersAtom, { useUsers } from "@/recoil/users";
@@ -7,7 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useSetRecoilState } from "recoil";
 import { socket } from "../lib/socket";
 
-const savedMoves: [number, number][][] = [];
+const savedMoves: Move[] = [];
 let moves: [number, number][] = [];
 
 export const useDraw = (
@@ -69,9 +69,16 @@ export const useDraw = (
     if (!ctx || blocked) return;
 
     setDrawing(false);
+
     ctx.closePath();
-    savedMoves.push(moves);
-    socket.emit("draw", moves, options);
+
+    const move: Move = {
+      path: moves,
+      options,
+    };
+
+    savedMoves.push(move);
+    socket.emit("draw", move);
     moves = [];
 
     handleEnd();
@@ -96,38 +103,79 @@ export const useDraw = (
 
 export const useSocketDraw = (
   ctx: CanvasRenderingContext2D | undefined,
+  drawing: boolean,
   handleEnd: () => void,
 ) => {
   const setUsers = useSetRecoilState(usersAtom);
 
   useEffect(() => {
-    socket.on("user_draw", (newMoves, options, userId) => {
-      if (!ctx) return;
+    socket.emit("joined_room");
+  }, []);
 
-      ctx.lineWidth = options.lineWidth;
-      ctx.strokeStyle = options.lineColor;
+  useEffect(() => {
+    socket.on("room", (roomJSON) => {
+      const room: Room = new Map(JSON.parse(roomJSON));
 
-      ctx.beginPath();
+      room.forEach((userMoves, userId) => {
+        if (ctx)
+          userMoves.forEach((move) => {
+            handleMove(move, ctx);
+          });
+        handleEnd();
 
-      newMoves.forEach(([x, y]) => {
-        ctx.lineTo(x, y);
-      });
-
-      ctx.stroke();
-      ctx.closePath();
-
-      handleEnd();
-      setUsers((prev) => {
-        const newUsers = { ...prev };
-        newUsers[userId] = [...newUsers[userId], newMoves];
-        return newUsers;
+        setUsers((prevUsers) => ({
+          ...prevUsers,
+          [userId]: userMoves,
+        }));
       });
     });
 
+    return () => {
+      socket.off("room");
+    };
+  }, [ctx, handleEnd, setUsers]);
+
+  useEffect(() => {
+    let moveToDrawLater: Move | undefined;
+    let userIdLater = "";
+    socket.on("user_draw", (move, userId) => {
+      if (ctx && !drawing) {
+        handleMove(move, ctx);
+
+        setUsers((prevUsers) => {
+          const newUsers = { ...prevUsers };
+          if (newUsers[userId]) newUsers[userId] = [...newUsers[userId], move];
+          return newUsers;
+        });
+      } else {
+        moveToDrawLater = move;
+        userIdLater = userId;
+      }
+    });
+
+    return () => {
+      socket.off("user_draw");
+
+      if (moveToDrawLater && userIdLater && ctx) {
+        handleMove(moveToDrawLater, ctx);
+        handleEnd();
+        setUsers((prevUsers) => {
+          const newUsers = { ...prevUsers };
+          newUsers[userIdLater] = [
+            ...newUsers[userIdLater],
+            moveToDrawLater as Move,
+          ];
+          return newUsers;
+        });
+      }
+    };
+  }, [ctx, drawing, handleEnd, setUsers]);
+
+  useEffect(() => {
     socket.on("user_undo", (userId) => {
-      setUsers((prev) => {
-        const newUsers = { ...prev };
-        newUsers[userId] = newUsers[userId].slice(0, -1);
+      setUsers((prevUsers) => {
+        const newUsers = { ...prevUsers };
+        newUsers[userId] = newUsers[userId]?.slice(0, -1);
 
         if (ctx) {
           drawOnUndo(ctx, savedMoves, newUsers);
@@ -139,8 +187,7 @@ export const useSocketDraw = (
     });
 
     return () => {
-      socket.off("user_draw");
       socket.off("user_undo");
     };
-  }, []);
+  }, [ctx, handleEnd, setUsers]);
 };

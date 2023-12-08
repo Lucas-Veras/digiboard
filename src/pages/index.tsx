@@ -1,8 +1,8 @@
-import Room from "@/components/Room";
-import { Inter } from "next/font/google";
+import Home from "@/components/Home";
+import { NextPage } from "next";
 
-const inter = Inter({ subsets: ["latin"] });
+const HomePage: NextPage = () => {
+  return <Home />;
+};
 
-export default function Home() {
-  return <Room />;
-}
+export default HomePage;

@@ -17,12 +17,8 @@ const RoomContextProvider = ({ children }: { children: ReactNode }) => {
   const y = useMotionValue(0);
 
   useEffect(() => {
-    socket.on("users_in_room", (newUsers) => {
-      newUsers.forEach((user) => {
-        if (!usersIds.includes(user) && user !== socket.id) {
-          setUsers((prevUsers) => ({ ...prevUsers, [user]: [] }));
-        }
-      });
+    socket.on("new_user", (newUser) => {
+      setUsers((prevUsers) => ({ ...prevUsers, [newUser]: [] }));
     });
 
     socket.on("user_disconnected", (userId) => {
@@ -34,7 +30,7 @@ const RoomContextProvider = ({ children }: { children: ReactNode }) => {
     });
 
     return () => {
-      socket.off("users_in_room");
+      socket.off("new_user");
       socket.off("user_disconnected");
     };
   }, [setUsers, usersIds]);

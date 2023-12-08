@@ -1,11 +1,9 @@
-import useViewPortSize from "@/hooks/useViewPortSize";
-import React, { useEffect, useRef, useState } from "react";
-import { useKeyPressEvent } from "react-use";
-import { useMotionValue, motion } from "framer-motion";
 import { CANVAS_SIZE } from "@/constants/canvasSize";
 import { useDraw, useSocketDraw } from "@/hooks/Canvas.hooks";
-import { socket } from "@/lib/socket";
-import { drawFromSocket } from "@/helpers/canvasHelpers";
+import useViewPortSize from "@/hooks/useViewPortSize";
+import { motion, useMotionValue } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { useKeyPressEvent } from "react-use";
 import Minimap from "./MiniMap";
 
 const Canvas = () => {
@@ -64,7 +62,7 @@ const Canvas = () => {
     return () => window.removeEventListener("keyup", handleKeyUp);
   }, [dragging]);
 
-  useSocketDraw(ctx, copyCanvasToSmall);
+  useSocketDraw(ctx, drawing, copyCanvasToSmall);
 
   return (
     <div className="relative h-full w-full overflow-hidden">
