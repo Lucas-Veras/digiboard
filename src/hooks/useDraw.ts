@@ -1,7 +1,7 @@
 import { useBoardPosition } from "@/contexts/RoomContext/RoomContext";
 import { getPos } from "@/lib/getPos";
 import { socket } from "@/lib/socket";
-import { useOptions } from "@/recoil/options";
+import { useOptions, useOptionsValue } from "@/recoil/options";
 import { useMyMoves } from "@/recoil/room";
 import { useCallback, useEffect, useState } from "react";
 
@@ -17,7 +17,7 @@ export const useDraw = (
   const movedX = boardPosition.x;
   const movedY = boardPosition.y;
 
-  const options = useOptions();
+  const options = useOptionsValue();
 
   const [drawing, setDrawing] = useState(false);
 

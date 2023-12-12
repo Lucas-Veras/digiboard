@@ -8,7 +8,7 @@ import { useEffect } from "react";
 import Canvas from "./Canvas";
 import MousePosition from "./MousePosition";
 import MouseRenderer from "./MouseRenderer";
-import TooBar from "./TooBar";
+import ToolBar from "./Room/components/Toolbar/ToolBar";
 
 const Room = () => {
   const roomId = useRoomId();
@@ -37,7 +37,7 @@ const Room = () => {
   return (
     <RoomContextProvider>
       <div className="relative h-full w-full overflow-hidden">
-        <TooBar />
+        <ToolBar />
         <Canvas />
         <MousePosition />
         <MouseRenderer />

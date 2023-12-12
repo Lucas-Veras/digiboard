@@ -1,6 +1,6 @@
 import { optionsAtom } from "./options.atoms";
-import { useOptions } from "./options.hooks";
+import { useOptions, useOptionsValue, useSetOptions } from "./options.hooks";
 
 export default optionsAtom;
 
-export { useOptions };
+export { useOptions, useOptionsValue, useSetOptions };
