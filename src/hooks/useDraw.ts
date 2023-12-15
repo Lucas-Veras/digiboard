@@ -1,7 +1,7 @@
 import { useBoardPosition } from "@/contexts/RoomContext/RoomContext";
 import { getPos } from "@/lib/getPos";
 import { socket } from "@/lib/socket";
-import { useOptions, useOptionsValue } from "@/recoil/options";
+import { useOptionsValue } from "@/recoil/options";
 import { useMyMoves } from "@/recoil/room";
 import { useCallback, useEffect, useState } from "react";
 
