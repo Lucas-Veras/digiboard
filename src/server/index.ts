@@ -127,8 +127,13 @@ nextApp.prepare().then(async () => {
       console.log("drawing", move);
 
       const roomId = getRoomId();
-      addMove(roomId, socket.id, move);
-      socket.broadcast.to(roomId).emit("user_draw", move, socket.id);
+      const timeStamp = Date.now();
+
+      addMove(roomId, socket.id, { ...move, timeStamp });
+      io.to(socket.id).emit("your_move", { ...move, timeStamp });
+      socket.broadcast
+        .to(roomId)
+        .emit("user_draw", { ...move, timeStamp }, socket.id);
     });
 
     socket.on("undo", () => {
@@ -137,6 +142,11 @@ nextApp.prepare().then(async () => {
       const roomId = getRoomId();
       undoMove(roomId, socket.id);
       socket.broadcast.to(roomId).emit("user_undo", socket.id);
+    });
+
+    socket.on("send_message", (msg) => {
+      console.log("send_message", msg);
+      io.to(getRoomId()).emit("new_msg", socket.id, msg);
     });
 
     socket.on("mouse_move", (x, y) => {

@@ -1,4 +1,4 @@
-import Portal from "@/components/Portal";
+import Portal from "@/components/Modal/Portal";
 
 import modalAtom from "@/recoil/modal";
 import { AnimatePresence, motion } from "framer-motion";

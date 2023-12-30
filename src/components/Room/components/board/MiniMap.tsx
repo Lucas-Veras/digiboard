@@ -35,7 +35,7 @@ const MiniMap = forwardRef<
 
   return (
     <div
-      className="absolute right-10 top-10 z-30 rounded-lg bg-zinc-200"
+      className="absolute right-10 top-10 z-30 overflow-hidden rounded-lg bg-zinc-50"
       ref={containerRef}
       style={{ width: CANVAS_SIZE.width / 7, height: CANVAS_SIZE.height / 7 }}
     >

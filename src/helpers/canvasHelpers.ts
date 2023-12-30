@@ -1,39 +1,20 @@
-import { CANVAS_SIZE } from "@/constants/canvasSize";
 
 export const handleMove = (move: Move, ctx: CanvasRenderingContext2D) => {
   const { path, options } = move;
-  const tempCtx = ctx;
 
-  if (tempCtx) {
-    tempCtx.lineWidth = options.lineWidth;
-    tempCtx.strokeStyle = options.lineColor;
+  ctx.lineWidth = options.lineWidth;
+  ctx.strokeStyle = options.lineColor;
 
-    tempCtx.beginPath();
-    path.forEach(([x, y]) => {
-      tempCtx.lineTo(x, y);
-    });
-    tempCtx.stroke();
-    tempCtx.closePath();
-  }
-};
+  if (move.eraser) ctx.globalCompositeOperation = "destination-out";
 
-export const drwBackground = (ctx: CanvasRenderingContext2D) => {
-  ctx.lineWidth = 1;
-  ctx.strokeStyle = "#ccc";
+  ctx.beginPath();
+  path.forEach(([x, y]) => {
+    ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+  ctx.closePath();
 
-  for (let i = 0; i < CANVAS_SIZE.height; i += 25) {
-    ctx.beginPath();
-    ctx.moveTo(0, i);
-    ctx.lineTo(ctx.canvas.width, i);
-    ctx.stroke();
-  }
-
-  for (let i = 0; i < CANVAS_SIZE.width; i += 25) {
-    ctx.beginPath();
-    ctx.moveTo(i, 0);
-    ctx.lineTo(i, ctx.canvas.height);
-    ctx.stroke();
-  }
+  ctx.globalCompositeOperation = "source-over";
 };
 
 export const drawAllMoves = (
@@ -43,13 +24,15 @@ export const drawAllMoves = (
   const { movesWithoutUser, usersMoves, myMoves } = room;
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-  drwBackground(ctx);
-
-  movesWithoutUser.forEach((move) => handleMove(move, ctx));
+  const moves = [...movesWithoutUser, ...myMoves];
 
   usersMoves.forEach((userMoves) => {
-    userMoves.forEach((move) => handleMove(move, ctx));
+    moves.push(...userMoves);
   });
 
-  myMoves.forEach((move) => handleMove(move, ctx));
+  moves.sort((a, b) => a.timeStamp - b.timeStamp);
+
+  moves.forEach((move) => {
+    handleMove(move, ctx);
+  });
 };

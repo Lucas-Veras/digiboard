@@ -6,11 +6,12 @@ import useViewPortSize from "@/hooks/useViewPortSize";
 import { socket } from "@/lib/socket";
 import { useRoom } from "@/recoil/room";
 import { motion, useMotionValue } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { RefObject, useEffect, useRef, useState } from "react";
 import { useKeyPressEvent } from "react-use";
 import Minimap from "./MiniMap";
+import Background from "./Background";
 
-const Canvas = () => {
+const Canvas = ({ undoRef }: { undoRef: RefObject<HTMLButtonElement> }) => {
   const room = useRoom();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const smallCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -66,8 +67,15 @@ const Canvas = () => {
 
     window.addEventListener("keyup", handleKeyUp);
 
-    return () => window.removeEventListener("keyup", handleKeyUp);
-  }, [dragging]);
+    const undoBtn = undoRef.current;
+
+    undoBtn?.addEventListener("click", handleUndo);
+
+    return () => {
+      window.removeEventListener("keyup", handleKeyUp);
+      undoBtn?.removeEventListener("click", handleUndo);
+    };
+  }, [dragging, handleUndo, undoRef]);
 
   useEffect(() => {
     if (ctx) socket.emit("joined_room");
@@ -82,27 +90,24 @@ const Canvas = () => {
 
   return (
     <div className="relative h-full w-full overflow-hidden">
-      <button className="absolute top-0" onClick={handleUndo}>
-        Undo
-      </button>
       <motion.canvas
         ref={canvasRef}
         width={CANVAS_SIZE.width}
         height={CANVAS_SIZE.height}
-        className={`bg-zinc-100 ${dragging && "cursor-move"}`}
+        className={`absolute top-0 z-10 ${dragging && "cursor-move"}`}
         style={{ x, y }}
         drag={dragging}
         dragConstraints={{
-          left: -CANVAS_SIZE.width - width,
+          left: -(CANVAS_SIZE.width - width),
           right: 0,
-          top: -CANVAS_SIZE.height - height,
+          top: -(CANVAS_SIZE.height - height),
           bottom: 0,
         }}
         dragElastic={0}
         dragTransition={{ power: 0, timeConstant: 0 }}
         onMouseDown={(e) => handleStartDrawing(e.clientX, e.clientY)}
         onMouseUp={handleEndDrawing}
-        onMouseMove={(e) => handleDraw(e.clientX, e.clientY)}
+        onMouseMove={(e) => handleDraw(e.clientX, e.clientY, e.shiftKey)}
         onTouchStart={(e) => {
           const touch = e.changedTouches[0];
           handleStartDrawing(touch.clientX, touch.clientY);
@@ -113,6 +118,7 @@ const Canvas = () => {
           handleDraw(touch.clientX, touch.clientY);
         }}
       />
+      <Background />
       <Minimap
         ref={smallCanvasRef}
         dragging={dragging}
